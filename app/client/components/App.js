@@ -63,6 +63,9 @@ class App extends Component {
 		});
 
 		this.state = {
+			getCurrentCardBind: this.getCurrentCard.bind(this),
+			onCreatedSuccessPayment: this.onCreatedSuccessPayment.bind(this),
+			// onCreatedSuccessPayment: ::this.onCreatedSuccessPayment,
 			cardsList,
 			cardHistory,
 			activeCardIndex: 0
@@ -113,6 +116,38 @@ class App extends Component {
 		return activeCard;
 	}
 
+	onCreatedSuccessPayment(transaction) {
+		let {cardsList, cardHistory} = this.state;
+		const card_info = transaction.card_info;
+		const transaction_info = transaction.transaction_info;
+
+		const card_index = cardsList.findIndex(card => card['id'] === transaction_info.cardId);
+
+		// update card balance exact from server response
+		console.log(cardsList[card_index]);
+		console.log(cardsList[card_index].balance);
+		cardsList[card_index].balance = card_info.balance;
+		console.log(cardsList[card_index].balance);
+		
+
+		// update transfers list
+		const new_transfer = {
+			card: cardsList[card_index],
+			cardId: transaction_info.cardId,
+			comission: transaction_info.comission,
+			data: transaction_info.data,
+			id: transaction_info.id,
+			time: transaction_info.time,
+			type: transaction_info.type,
+			sum: transaction_info.sum
+		} 
+		console.log(cardHistory);
+		cardHistory.push(new_transfer);
+		console.log(cardHistory);
+		
+		this.setState({cardHistory});
+	}
+
 	/**
 	 * Рендер компонента
 	 *
@@ -142,7 +177,7 @@ class App extends Component {
 							inactiveCardsList={inactiveCardsList}
 							onCardChange={(newActiveCardIndex) => this.onCardChange(newActiveCardIndex)}
 						/>
-						<MobilePayment activeCard={activeCard} getCurrentCard={this.getCurrentCard.bind(this)} />
+						<MobilePayment activeCard={activeCard} onCreatedSuccessPayment={this.state.onCreatedSuccessPayment} />
 						<Withdraw
 							activeCard={activeCard}
 							inactiveCardsList={inactiveCardsList}

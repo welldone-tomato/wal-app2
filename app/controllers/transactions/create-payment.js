@@ -11,23 +11,28 @@ module.exports = async (ctx) => {
 	try {
 		const card_id = ctx.params['id'];
 		// check if this card exists
-		const card_info = ctx.CardsModel.getObjectAndPositionInSourceByCustomCondition(['cardNumber', card_id]);
+		// const card_info = ctx.CardsModel.getObjectAndPositionInSourceByCustomCondition(['cardNumber', card_id]);
+		const card_info = ctx.CardsModel.getObjectAndPositionInSourceByCustomCondition(['id', card_id]);
 		
 		// console.log(card_info);
-		card_info.data.balance = parseInt(card_info.data.balance) - parseInt(payment_details.paymentAmount) + '';
+		card_info.data.balance = parseInt(card_info.data.balance) - parseInt(payment_details.paymentAmount) - (('paymentCommission' in payment_details) ? parseInt(payment_details.paymentCommission) : 0) + '';
 
 
-		await ctx.CardsModel.update(card_info.data, card_info.index);
-		await ctx.CardsModel.update(card_info.data, card_info.index);
-		const transaction = {
-	        "cardId": card_info.index,
+		const saved_card = await ctx.CardsModel.update(card_info.data, card_info.index);
+		let transaction = {
+	        "cardId": card_id,
 	        "type": "paymentMobile",
 	        "data": payment_details.phoneNumber,
 	        "sum": payment_details.paymentAmount,
 	    };
 
+	    if ('paymentCommission' in payment_details) {
+	    	transaction.commission = payment_details.paymentCommission;
+	    }
+	    console.log(transaction);
 
-		await ctx.TransactionsModel.create(transaction/*, options*/);
+
+		const saved_transaction = await ctx.TransactionsModel.create(transaction/*, options*/);
 		// update
 
 		// console.log(card_index);
@@ -43,7 +48,7 @@ module.exports = async (ctx) => {
 		
 
 
-		ctx.body = 'asdgas';
+		ctx.body = JSON.stringify({result: 'success', data: {saved_transaction, saved_card}});
 		ctx.status = 201;
 	} catch (err) {
 		// console.log(err);

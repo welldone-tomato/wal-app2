@@ -75,6 +75,11 @@ class Transactions extends FileModel{
 			data: transactionData.data,
 			cardId: parseInt(transactionData.cardId)
 		}
+
+		if (transactionData.hasOwnProperty('commission')) {
+			result.data.commission = transactionData.commission;
+		}
+
 		return result;
 
 

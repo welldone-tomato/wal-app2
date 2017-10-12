@@ -155,7 +155,7 @@ app.use(async (ctx, next) => {
 
 
 app.use(bodyParser);
-// app.use(bodyParser.urlencoded());
+
 app.use(router.routes());
 app.use(serve('./web'));
 

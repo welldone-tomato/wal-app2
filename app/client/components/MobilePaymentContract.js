@@ -114,14 +114,50 @@ class MobilePaymentContract extends Component {
 		if (!isNumber || sum === 0) {
 			return;
 		}
-		console.log(this.props.getCurrentCard());
+		/*let data = new FormData();
+		data.append( 'paymentAmount',  parseInt(sum));
+		data.append( 'paymentCommission', parseInt(commission));
+		data.append( 'phoneNumber', phoneNumber);
+		const card_id = this.props.activeCard.id;
+
+		fetch(`cards/${card_id}/pay`,
+		{
+		    method: "POST",
+		    body: data
+		}).then(console.log);*/
+		const payment_transaction = {
+			paymentAmount: sum,
+			paymentCommission: commission + '',
+			phoneNumber: phoneNumber
+		}
+
+		const card_id = this.props.activeCard.id;
+		fetch(`cards/${card_id}/pay`,
+		{
+		    method: "POST",
+		    headers: {
+			    'Accept': 'application/json, text/plain, */*',
+			    'Content-Type': 'application/json'
+			},
+		    body: JSON.stringify(payment_transaction),
+		}).then(res => res.json())
+  			.then((res) => {
+  				console.log(res);
+  				if (res.result == 'success') {
+  					// this.props.onPaymentSuccess({sum, phoneNumber, commission, time:res.data.saved_transaction.time, type:'paymentMobile', id:res.data.saved_transaction.id, card_info:res.data.saved_card});
+  					this.props.onPaymentSuccess({transaction_info:res.data.saved_transaction, card_info:res.data.saved_card});
+  				}
+  			});
+
+		// console.log(this.props.onCreatedSuccessPayment());
+		// console.log(this.props.activeCard);
 
 
 		// fetch('').then(function(){
 
 		// })
 
-		this.props.onPaymentSuccess({sum, phoneNumber, commission});
+		
 	}
 
 	/**
@@ -187,7 +223,7 @@ MobilePaymentContract.propTypes = {
 		id: PropTypes.number,
 		theme: PropTypes.object
 	}).isRequired,
-	getCurrentCard: PropTypes.func,
+	onCreatedSuccessPayment: PropTypes.func,
 	onPaymentSuccess: PropTypes.func.isRequired
 };
 
